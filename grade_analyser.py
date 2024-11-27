@@ -1,33 +1,29 @@
 import csv
 
-def classify_grade(average_grade):
-    if average_grade >= 70:
-        return "1"
-    elif average_grade >= 60:
-        return "2:1"
-    elif average_grade >= 50:
-        return "2:2"
-    elif average_grade >= 40:
-        return "3"
-    else:
-        return "F"
+classification_boundaries = [
+    (70, "1"),
+    (60, "2:1"),
+    (50, "2:2"),
+    (40, "3"),
+    (0, "F")
+]
 
-def process_student_data():
-    input_file = input("Enter the filename of the student file: ")
-    output_file = input_file + "_out.csv"
-    
-    with open(input_file, mode="r") as infile, open(output_file, mode="w", newline="") as outfile:
-        reader = csv.reader(infile)
-        writer = csv.writer(outfile)
-        
-        for row in reader:
-            student_id = row[0]
-            grades = [float(grade) for grade in row[1:] if grade.strip()]
-            average_grade = sum(grades) / len(grades)
-            classification = classify_grade(average_grade)
-            writer.writerow([student_id, f"{average_grade:.2f}", classification])
+filename = input("Enter the filename: ")
 
-    print(f"Processed data written to {output_file}")
+with open(filename, 'r') as file:
+    reader = csv.reader(file)
+    header = next(reader)
+    results = []
 
-# run 
-process_student_data()
+    for row in reader:
+        student_id = row[0]
+        grades = [int(g) for g in row[1:] if g]
+        avg_grade = sum(grades) / len(grades)
+        classification = next(c for b, c in classification_boundaries if avg_grade >= b)
+        results.append((student_id, f"{avg_grade:.2f}", classification))
+
+output_filename = filename + "_out.csv"
+
+with open(output_filename, 'w', newline='') as file:
+    writer = csv.writer(file)
+    writer.writerows(results)
